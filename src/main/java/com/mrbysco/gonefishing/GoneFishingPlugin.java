@@ -23,6 +23,7 @@ public class GoneFishingPlugin extends JavaPlugin {
 
 	public GoneFishingPlugin(@Nonnull JavaPluginInit init) {
 		super(init);
+		LOGGER.atInfo().log("Initializing Gone Fishing Plugin");
 		this.config = this.withConfig("GoneFishingConfig", FishingConfig.CODEC);
 	}
 
@@ -33,11 +34,11 @@ public class GoneFishingPlugin extends JavaPlugin {
 
 	@Override
 	protected void setup() {
-		IO.println("Setting up Bobber component");
+		LOGGER.atInfo().log("Setting up Bobber component");
 		bobberComponent = this.getEntityStoreRegistry().registerComponent(BobberComponent.class, BobberComponent::new);
-		IO.println("Registering Fishing Interaction");
+		LOGGER.atInfo().log("Registering Fishing Interaction");
 		this.getCodecRegistry(Interaction.CODEC).register("GoneFishingFish", FishingInteraction.class, FishingInteraction.CODEC);
-
+		LOGGER.atInfo().log("Registering Bobber System");
 		this.getEntityStoreRegistry().registerSystem(new BobberSystem());
 
 	}
