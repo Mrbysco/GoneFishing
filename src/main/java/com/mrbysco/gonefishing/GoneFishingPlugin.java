@@ -46,6 +46,7 @@ public class GoneFishingPlugin extends JavaPlugin {
 	@Override
 	protected void start() {
 		super.start();
+		this.config.save();
 		FishingConfig config = this.config.get();
 		FishHelper.setupFishes(config);
 	}
