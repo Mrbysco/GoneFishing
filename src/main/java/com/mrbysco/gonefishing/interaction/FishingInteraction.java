@@ -141,7 +141,9 @@ public class FishingInteraction extends SimpleInstantInteraction {
 
 		ItemStack fishStack = FishHelper.createRandomFish();
 		if (!fishStack.isEmpty()) {
-			ItemUtils.throwItem(bobberRef, fishStack, 5.0F, commandBuffer);
+			Vector3d direction = TargetUtil.getLook(playerRef.getReference(), commandBuffer).getDirection().negate().add(0, 0.5, 0);
+			ItemUtils.throwItem(bobberRef, commandBuffer, fishStack, direction, 10.0F);
+
 			playerRef.sendMessage(Message.translation("gonefishing.caughtFish").color(Color.GREEN).param("fish", Message.translation(fishStack.getItem().getTranslationKey())));
 		}
 		commandBuffer.removeEntity(bobberRef, RemoveReason.REMOVE);
