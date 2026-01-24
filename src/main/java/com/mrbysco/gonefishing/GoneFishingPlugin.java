@@ -10,6 +10,7 @@ import com.hypixel.hytale.server.core.util.Config;
 import com.mrbysco.gonefishing.component.BobberComponent;
 import com.mrbysco.gonefishing.config.FishingConfig;
 import com.mrbysco.gonefishing.interaction.FishingInteraction;
+import com.mrbysco.gonefishing.interaction.SpawnFishInteraction;
 import com.mrbysco.gonefishing.systems.BobberSystem;
 import com.mrbysco.gonefishing.util.FishHelper;
 
@@ -28,19 +29,14 @@ public class GoneFishingPlugin extends JavaPlugin {
 	}
 
 	@Override
-	protected void shutdown() {
-
-	}
-
-	@Override
 	protected void setup() {
 		LOGGER.atInfo().log("Setting up Bobber component");
 		bobberComponent = this.getEntityStoreRegistry().registerComponent(BobberComponent.class, BobberComponent::new);
 		LOGGER.atInfo().log("Registering Fishing Interaction");
 		this.getCodecRegistry(Interaction.CODEC).register("GoneFishingFish", FishingInteraction.class, FishingInteraction.CODEC);
+		this.getCodecRegistry(Interaction.CODEC).register("GoneFishing_Spawn_Fish", SpawnFishInteraction.class, SpawnFishInteraction.CODEC);
 		LOGGER.atInfo().log("Registering Bobber System");
 		this.getEntityStoreRegistry().registerSystem(new BobberSystem());
-
 	}
 
 	@Override

@@ -4,10 +4,11 @@ import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.mrbysco.gonefishing.GoneFishingPlugin;
+import com.mrbysco.gonefishing.util.FishHelper;
 
 public class BobberComponent implements Component<EntityStore> {
 	// Max time to wait for a catch
-	private static final int MAX_CATCH_TIME = 100;
+	private static final int MIN_CATCH_TIME = 100;
 
 	// Age of the bobber
 	private int bobberAge;
@@ -37,14 +38,10 @@ public class BobberComponent implements Component<EntityStore> {
 		this.bobberAge = bobberAge;
 	}
 
-	public boolean isCanCatch() {
-		return canCatch;
-	}
-
 	public void setCanCatch(boolean canCatch) {
 		this.canCatch = canCatch;
 		if (canCatch) {
-			this.catchTimer = MAX_CATCH_TIME;
+			this.catchTimer = MIN_CATCH_TIME;
 		} else {
 			this.catchTimer = 0;
 		}
@@ -62,8 +59,8 @@ public class BobberComponent implements Component<EntityStore> {
 		this.timeUntilCatch = timeUntilCatch;
 	}
 
-	public void resetTimeUntilCatch() {
-		this.timeUntilCatch = -1;
+	public void setRandomTimeUntilCatch() {
+		this.timeUntilCatch = FishHelper.getTimeUntilCatch();
 	}
 
 	public int getCatchTimer() {

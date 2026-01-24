@@ -1,0 +1,71 @@
+{
+  "Quality": "Template",
+  "TranslationProperties": {
+    "Name": "server.npcRoles.Bluegill.name"
+  },
+  "Categories": [
+    "Fish"
+  ],
+  "Icon": "Icons/ItemsGenerated/Fish_Bluegill_Item.png",
+  "InteractionVars": {
+    "SpawnNPC_Entity": {
+      "Interactions": [
+        {
+          "Parent": "SpawnNPC_Entity_Default",
+          "EntityId": "Bluegill",
+          "SpawnOffset": {
+            "X": 0,
+            "Y": 1,
+            "Z": 0
+          },
+          "Effects": {
+            "WorldSoundEventId": "SFX_Water_MoveOut"
+          }
+        }
+      ]
+    }
+  },
+  "Interactions": {
+    "Primary": "Block_Primary",
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "GoneFishing_Spawn_Fish"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Item",
+  "Tags": {
+    "Type": [
+      "SpawnNPC"
+    ],
+    "Family": [
+      "Fish"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Items_Splatty",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      4,
+      -13.5
+    ]
+  },
+  "Scale": 1,
+  "Model": "NPC/Swimming_Wildlife/Bluegill/Models/Model.blockymodel",
+  "Texture": "NPC/Swimming_Wildlife/Bluegill/Models/Texture.png",
+  "ResourceTypes": [
+    {
+      "Id": "Fish"
+    }
+  ],
+  "ItemEntity": {
+    "ParticleSystemId": "Item"
+  }
+}

@@ -14,6 +14,7 @@ public class FishHelper {
 	private static final Map<String, Float> FISHES = new HashMap<>();
 	private static int minFishingTime = 100;
 	private static int maxFishingTime = 600;
+	private static boolean canRelease = true;
 
 	/**
 	 * Create the default fish table with predefined weights.
@@ -22,36 +23,36 @@ public class FishHelper {
 	 */
 	public static Map<String, Float> createDefaultFishTable() {
 		Map<String, Float> fishTable = new HashMap<>();
-		fishTable.put("Fish_Bluegill_Item", 5.0F);
+		fishTable.put("Fish_Bluegill_Item", 5.0F); // Common
 		fishTable.put("Fish_Catfish_Item", 5.0F); // Common
 		fishTable.put("Fish_Minnow_Item", 5.0F); // Common
-		fishTable.put("Fish_Tang_Blue_Item", 3.0F); // Uncommon
-		fishTable.put("Fish_Tang_Chevron_Item", 3.0F); // Uncommon
-		fishTable.put("Fish_Tang_Lemon_Peel_Item", 3.0F); // Uncommon
-		fishTable.put("Fish_Tang_Sailfin_Item", 3.0F); // Uncommon
-		fishTable.put("Fish_Clownfish_Item", 1.5F); // Rare
-		fishTable.put("Fish_Pufferfish_Item", 1.5F); // Rare
-		fishTable.put("Fish_Trout_Rainbow_Item", 1.5F); // Rare
-		fishTable.put("Fish_Salmon_Item", 1.5F); // Rare
-		fishTable.put("Fish_Jellyfish_Blue_Item", 0.75F); // Epic
-		fishTable.put("Fish_Jellyfish_Cyan_Item", 0.75F); // Epic
-		fishTable.put("Fish_Jellyfish_Green_Item", 0.75F); // Epic
-		fishTable.put("Fish_Jellyfish_Red_Item", 0.75F); // Epic
-		fishTable.put("Fish_Jellyfish_Yellow_Item", 0.75F); // Epic
-		fishTable.put("Fish_Jellyfish_Man_Of_War_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Crab_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Eel_Moray_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Frostgill_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Lobster_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Pike_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Piranha_Black_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Piranha_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Shark_Hammerhead_Item", 5.0F);
-		fishTable.put("Fish_Shellfish_Lava_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Snapjaw_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Trilobite_Black_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Trilobite_Item", 0.25F); // Legendary
-		fishTable.put("Fish_Whale_Humpback_Item", 0.25F); // Legendary
+		fishTable.put("Fish_Tang_Blue_Item", 1.0F); // Uncommon
+		fishTable.put("Fish_Tang_Chevron_Item", 1.0F); // Uncommon
+		fishTable.put("Fish_Tang_Lemon_Peel_Item", 1.0F); // Uncommon
+		fishTable.put("Fish_Tang_Sailfin_Item", 1.0F); // Uncommon
+		fishTable.put("Fish_Clownfish_Item", 0.5F); // Rare
+		fishTable.put("Fish_Pufferfish_Item", 0.5F); // Rare
+		fishTable.put("Fish_Trout_Rainbow_Item", 0.5F); // Rare
+		fishTable.put("Fish_Salmon_Item", 0.5F); // Rare
+		fishTable.put("Fish_Jellyfish_Blue_Item", 0.2F); // Epic
+		fishTable.put("Fish_Jellyfish_Cyan_Item", 0.2F); // Epic
+		fishTable.put("Fish_Jellyfish_Green_Item", 0.2F); // Epic
+		fishTable.put("Fish_Jellyfish_Red_Item", 0.2F); // Epic
+		fishTable.put("Fish_Jellyfish_Yellow_Item", 0.2F); // Epic
+		fishTable.put("Fish_Jellyfish_Man_Of_War_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Crab_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Eel_Moray_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Frostgill_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Lobster_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Pike_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Piranha_Black_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Piranha_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Shark_Hammerhead_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Shellfish_Lava_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Snapjaw_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Trilobite_Black_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Trilobite_Item", 0.01F); // Legendary
+		fishTable.put("Fish_Whale_Humpback_Item", 0.01F); // Legendary
 		return fishTable;
 	}
 
@@ -67,6 +68,7 @@ public class FishHelper {
 
 		minFishingTime = config.minFishingTime;
 		maxFishingTime = config.maxFishingTime;
+		canRelease = config.canRelease;
 	}
 
 	/**
@@ -114,5 +116,9 @@ public class FishHelper {
 
 	public static int getTimeUntilCatch() {
 		return RANDOM.nextInt((maxFishingTime - minFishingTime) + 1) + minFishingTime;
+	}
+
+	public static boolean canReleaseFish() {
+		return canRelease;
 	}
 }
