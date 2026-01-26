@@ -42,7 +42,7 @@ public class BobberSystem extends EntityTickingSystem<EntityStore> {
 				} else {
 					// Reset catch state after timer expires
 					component.setCanCatch(false);
-					resetTimeUntilCatch(component);
+					component.setRandomTimeUntilCatch();
 					AnimationUtils.playAnimation(bobberRef, AnimationSlot.Status, "Idle", true, store);
 				}
 			} else {
@@ -55,17 +55,11 @@ public class BobberSystem extends EntityTickingSystem<EntityStore> {
 						component.setTimeUntilCatch(newTimeUntilCatch);
 					}
 				} else {
-					resetTimeUntilCatch(component);
+					component.setRandomTimeUntilCatch();
 					AnimationUtils.playAnimation(bobberRef, AnimationSlot.Status, "Idle", true, store);
 				}
 			}
 		}
-	}
-
-	private void resetTimeUntilCatch(BobberComponent component) {
-		// Set a random time until catch
-		int randomTime = 100;
-		component.setTimeUntilCatch(randomTime);
 	}
 
 	@NullableDecl

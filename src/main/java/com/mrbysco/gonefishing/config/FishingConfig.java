@@ -29,10 +29,16 @@ public class FishingConfig {
 							config.maxFishingTime = value,
 					(config) -> config.maxFishingTime)
 			.documentation("The maximum time (in ticks) before a fish must hook onto the line. [default: 600]").add()
+			.append(new KeyedCodec<>(
+							"CanRelease", Codec.BOOLEAN), (config, value) ->
+							config.canRelease = value,
+					(config) -> config.canRelease)
+			.documentation("Enable right-click to release a caught fish [default: true]").add()
 			.build();
 
 
 	public Map<String, Float> fishTable = FishHelper.createDefaultFishTable();
 	public int minFishingTime = 100;
 	public int maxFishingTime = 600;
+	public boolean canRelease = true;
 }
