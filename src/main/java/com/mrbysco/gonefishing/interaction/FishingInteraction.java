@@ -3,6 +3,7 @@ package com.mrbysco.gonefishing.interaction;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
@@ -43,7 +44,9 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
+import com.mrbysco.gonefishing.GoneFishingPlugin;
 import com.mrbysco.gonefishing.component.BobberComponent;
+import com.mrbysco.gonefishing.component.BoundBobberComponent;
 import com.mrbysco.gonefishing.util.FishHelper;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
@@ -97,12 +100,22 @@ public class FishingInteraction extends SimpleInstantInteraction {
 				if (fishingMetaData != null) {
 					// Handle the fishing rod reeling logic
 					reelBobber(world, commandBuffer, hotbarItem, inventory, activeSlot, fishingMetaData, playerref);
+					setBoundBobber(commandBuffer, ref, null);
 				} else {
+					if (hasBoundBobber(commandBuffer, ref)) {
+						// Player already has a bound bobber, cannot cast another
+						playerref.sendMessage(Message.translation("gonefishing.alreadyCasting").color(Color.RED));
+						context.getState().state = InteractionState.Failed;
+						return;
+					}
+
 					int soundEventIndex = SoundEvent.getAssetMap().getIndex("SFX_GoneFishing_Cast");
 					SoundUtil.playSoundEvent2dToPlayer(playerref, soundEventIndex, SoundCategory.SFX);
 
 					// Handle the fishing rod casting logic
-					spawnBobber(world, commandBuffer, context, hotbarItem, new Vector3i(blockposition.x, blockposition.y, blockposition.z), inventory, activeSlot);
+					spawnBobber(world, commandBuffer, context, hotbarItem,
+							new Vector3i(blockposition.x, blockposition.y, blockposition.z),
+							inventory, activeSlot, ref);
 				}
 			}
 		}
@@ -151,8 +164,8 @@ public class FishingInteraction extends SimpleInstantInteraction {
 						commandBuffer
 				);
 			} else {
-			  Vector3d direction = TargetUtil.getLook(playerRef.getReference(), commandBuffer).getDirection().negate().add(0, 0.5, 0);
-			  ItemUtils.throwItem(bobberRef, commandBuffer, fishStack, direction, 10.0F);
+				Vector3d direction = TargetUtil.getLook(playerRef.getReference(), commandBuffer).getDirection().negate().add(0, 0.5, 0);
+				ItemUtils.throwItem(bobberRef, commandBuffer, fishStack, direction, 10.0F);
 			}
 			playerRef.sendMessage(Message.translation("gonefishing.caughtFish").color(Color.GREEN).param("fish", Message.translation(fishStack.getItem().getTranslationKey())));
 		}
@@ -171,7 +184,7 @@ public class FishingInteraction extends SimpleInstantInteraction {
 	 * @param hotbarSlot    The hotbar slot index
 	 */
 	private void spawnBobber(@Nonnull World world, @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionContext context,
-	                         @Nonnull ItemStack fishingStack, @Nonnull Vector3i targetBlock, Inventory inventory, byte hotbarSlot) {
+	                         @Nonnull ItemStack fishingStack, @Nonnull Vector3i targetBlock, Inventory inventory, byte hotbarSlot, Ref<EntityStore> playerRef) {
 		Ref<EntityStore> ref = context.getEntity();
 		Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
 		Vector3d vector3d = targetBlock.toVector3d();
@@ -218,6 +231,8 @@ public class FishingInteraction extends SimpleInstantInteraction {
 
 		// Update the fishing rod's metadata to bind it to the spawned bobber
 		adjustMetadata(inventory, hotbarSlot, fishingStack, uuid);
+		// Update the player's bound bobber component
+		setBoundBobber(commandBuffer, playerRef, uuid);
 	}
 
 	/**
@@ -262,5 +277,34 @@ public class FishingInteraction extends SimpleInstantInteraction {
 				(_blockId, fluidId) -> fluidId != 0,
 				vector3d.x, vector3d.y, vector3d.z, vector3d1.x, vector3d1.y, vector3d1.z, maxDistance
 		);
+	}
+
+	/**
+	 * Checks if the player has a bound bobber.
+	 *
+	 * @param componentAccessor the component accessor
+	 * @param playerRef         the player reference
+	 * @return true if the player has a bound bobber, false otherwise
+	 */
+	private boolean hasBoundBobber(ComponentAccessor<EntityStore> componentAccessor, Ref<EntityStore> playerRef) {
+		return componentAccessor.getComponent(playerRef, GoneFishingPlugin.get().getBoundBobberComponent()) != null;
+	}
+
+	/**
+	 * Binds the UUID to the player so they can't cast multiple bobbers.
+	 *
+	 * @param componentAccessor the component accessor
+	 * @param playerRef         the player reference
+	 * @param uuid              the bobber UUID to bind, or null to unbind
+	 */
+	private void setBoundBobber(ComponentAccessor<EntityStore> componentAccessor, Ref<EntityStore> playerRef, @Nullable UUID uuid) {
+		boolean hasBobber = hasBoundBobber(componentAccessor, playerRef);
+		if (hasBobber && uuid == null) {
+			componentAccessor.tryRemoveComponent(playerRef, GoneFishingPlugin.get().getBoundBobberComponent());
+		} else {
+			if (!hasBobber && uuid != null) {
+				componentAccessor.addComponent(playerRef, GoneFishingPlugin.get().getBoundBobberComponent(), new BoundBobberComponent(uuid));
+			}
+		}
 	}
 }

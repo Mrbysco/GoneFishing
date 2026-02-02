@@ -27,7 +27,7 @@ public class BobberComponent implements Component<EntityStore> {
 	}
 
 	public static ComponentType<EntityStore, BobberComponent> getComponentType() {
-		return GoneFishingPlugin.bobberComponent;
+		return GoneFishingPlugin.get().getBobberComponent();
 	}
 
 	public int getBobberAge() {

@@ -65,6 +65,6 @@ public class BobberSystem extends EntityTickingSystem<EntityStore> {
 	@NullableDecl
 	@Override
 	public Query<EntityStore> getQuery() {
-		return GoneFishingPlugin.bobberComponent;
+		return GoneFishingPlugin.get().getBobberComponent();
 	}
 }
