@@ -12,7 +12,7 @@
         }
     ],
     "Website": "https://www.curseforge.com/hytale/mods/gone-fishing",
-    "ServerVersion": "*",
+    "ServerVersion": "2026.02.17-255364b8e",
     "Dependencies": {
         "Hytale:EntityModule": "*"
     },
