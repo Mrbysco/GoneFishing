@@ -98,25 +98,35 @@ public class FishingInteraction extends SimpleInstantInteraction {
 				}
 				FishingMetaData fishingMetaData = itemstack.getFromMetadataOrNull(FishingMetaData.KEY, FishingMetaData.CODEC);
 				if (fishingMetaData != null) {
-					// Handle the fishing rod reeling logic
-					reelBobber(world, commandBuffer, hotbarItem, inventory, activeSlot, fishingMetaData, playerref);
-					setBoundBobber(commandBuffer, ref, null);
-				} else {
-					if (hasBoundBobber(commandBuffer, ref)) {
-						// Player already has a bound bobber, cannot cast another
-						playerref.sendMessage(Message.translation("gonefishing.alreadyCasting").color(Color.RED));
-						context.getState().state = InteractionState.Failed;
+					// Verify the bobber still exists
+					UUID bound = fishingMetaData.getBoundBobber();
+					boolean bobberExists = bound != null && world.getEntityStore().getRefFromUUID(bound) != null;
+
+					if (!bobberExists) {
+						adjustMetadata(inventory, activeSlot, hotbarItem, null);
+						setBoundBobber(commandBuffer, ref, null);
+					} else {
+						reelBobber(world, commandBuffer, hotbarItem, inventory, activeSlot, fishingMetaData, playerref);
+						setBoundBobber(commandBuffer, ref, null);
 						return;
 					}
-
-					int soundEventIndex = SoundEvent.getAssetMap().getIndex("SFX_GoneFishing_Cast");
-					SoundUtil.playSoundEvent2dToPlayer(playerref, soundEventIndex, SoundCategory.SFX);
-
-					// Handle the fishing rod casting logic
-					spawnBobber(world, commandBuffer, context, hotbarItem,
-							new Vector3i(blockposition.x, blockposition.y, blockposition.z),
-							inventory, activeSlot, ref);
 				}
+
+				if (hasBoundBobber(commandBuffer, ref)) {
+					// Player already has a bound bobber, cannot cast another
+					playerref.sendMessage(Message.translation("gonefishing.alreadyCasting").color(Color.RED));
+					context.getState().state = InteractionState.Failed;
+					return;
+				}
+
+				int soundEventIndex = SoundEvent.getAssetMap().getIndex("SFX_GoneFishing_Cast");
+				SoundUtil.playSoundEvent2dToPlayer(playerref, soundEventIndex, SoundCategory.SFX);
+
+				// Handle the fishing rod casting logic
+				spawnBobber(world, commandBuffer, context, hotbarItem,
+						new Vector3i(blockposition.x, blockposition.y, blockposition.z),
+						inventory, activeSlot, ref);
+
 			}
 		}
 	}

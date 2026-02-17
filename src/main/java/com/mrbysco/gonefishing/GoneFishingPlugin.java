@@ -12,6 +12,7 @@ import com.mrbysco.gonefishing.component.BoundBobberComponent;
 import com.mrbysco.gonefishing.config.FishingConfig;
 import com.mrbysco.gonefishing.interaction.FishingInteraction;
 import com.mrbysco.gonefishing.interaction.SpawnFishInteraction;
+import com.mrbysco.gonefishing.systems.BobberDespawnSystem;
 import com.mrbysco.gonefishing.systems.BobberSystem;
 import com.mrbysco.gonefishing.util.FishHelper;
 
@@ -46,8 +47,9 @@ public class GoneFishingPlugin extends JavaPlugin {
 		LOGGER.atInfo().log("Registering Fishing Interaction");
 		this.getCodecRegistry(Interaction.CODEC).register("GoneFishingFish", FishingInteraction.class, FishingInteraction.CODEC);
 		this.getCodecRegistry(Interaction.CODEC).register("GoneFishing_Spawn_Fish", SpawnFishInteraction.class, SpawnFishInteraction.CODEC);
-		LOGGER.atInfo().log("Registering Bobber System");
+		LOGGER.atInfo().log("Registering Bobber Systems");
 		this.getEntityStoreRegistry().registerSystem(new BobberSystem());
+		this.getEntityStoreRegistry().registerSystem(new BobberDespawnSystem());
 	}
 
 	@Override

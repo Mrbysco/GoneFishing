@@ -59,7 +59,6 @@ public class SpawnFishInteraction extends SimpleInstantInteraction {
 					return;
 				}
 				Inventory inventory = player.getInventory();
-				byte activeSlot = inventory.getActiveHotbarSlot();
 				ItemStack hotbarItem = inventory.getActiveHotbarItem();
 
 				Vector3i getTargetWater = getTargetWater(commandBuffer, world, 10F, ref);
