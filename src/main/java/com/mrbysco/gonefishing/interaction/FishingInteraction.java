@@ -45,6 +45,9 @@ import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import com.mrbysco.gonefishing.GoneFishingPlugin;
+import com.mrbysco.gonefishing.api.event.FishCaughtEvent;
+import com.mrbysco.gonefishing.api.event.FishingFailedEvent;
+import com.mrbysco.gonefishing.api.event.FishingStartedEvent;
 import com.mrbysco.gonefishing.component.BobberComponent;
 import com.mrbysco.gonefishing.component.BoundBobberComponent;
 import com.mrbysco.gonefishing.util.FishHelper;
@@ -119,6 +122,11 @@ public class FishingInteraction extends SimpleInstantInteraction {
 					return;
 				}
 
+				FishingStartedEvent startedEvent = new FishingStartedEvent(ref);
+				commandBuffer.invoke(ref, startedEvent);
+
+				if (startedEvent.isCancelled()) return;
+
 				int soundEventIndex = SoundEvent.getAssetMap().getIndex("SFX_GoneFishing_Cast");
 				SoundUtil.playSoundEvent2dToPlayer(playerref, soundEventIndex, SoundCategory.SFX);
 
@@ -150,6 +158,8 @@ public class FishingInteraction extends SimpleInstantInteraction {
 		int soundEventIndex = SoundEvent.getAssetMap().getIndex("SFX_GoneFishing_Reel");
 		SoundUtil.playSoundEvent2dToPlayer(playerRef, soundEventIndex, SoundCategory.SFX);
 
+		var ref = playerRef.getReference();
+
 		// Handle the bobber retrieval logic here
 		Ref<EntityStore> bobberRef = world.getEntityStore().getRefFromUUID(fishingMetaData.getBoundBobber());
 		if (bobberRef == null) {
@@ -157,6 +167,9 @@ public class FishingInteraction extends SimpleInstantInteraction {
 		}
 		BobberComponent component = commandBuffer.getComponent(bobberRef, BobberComponent.getComponentType());
 		if (component == null || !component.canCatchFish()) {
+			FishingFailedEvent event = new FishingFailedEvent(ref);
+			commandBuffer.invoke(ref, event);
+
 			commandBuffer.removeEntity(bobberRef, RemoveReason.REMOVE);
 			playerRef.sendMessage(Message.translation("gonefishing.tooEarly").color(Color.RED));
 			return;
@@ -164,20 +177,28 @@ public class FishingInteraction extends SimpleInstantInteraction {
 
 		ItemStack fishStack = FishHelper.createRandomFish();
 		if (!fishStack.isEmpty()) {
-			var ref = playerRef.getReference();
-			if (ref != null) {
-				// Fire an event before picking up the item
-				ItemUtils.interactivelyPickupItem(
-						playerRef.getReference(),
-						fishStack,
-						null,
-						commandBuffer
-				);
-			} else {
-				Vector3d direction = TargetUtil.getLook(playerRef.getReference(), commandBuffer).getDirection().negate().add(0, 0.5, 0);
-				ItemUtils.throwItem(bobberRef, commandBuffer, fishStack, direction, 10.0F);
+			// Fire a custom event that can be listened to for modifying the caught fish or canceling the catch entirely
+			FishCaughtEvent caughtEvent = new FishCaughtEvent(fishStack, ref);
+			commandBuffer.invoke(ref, caughtEvent);
+
+			if (!caughtEvent.isCancelled()) {
+				fishStack = caughtEvent.getCaughtItem(); // Update the fish stack in case it was modified by the event listener
+
+				if (ref != null) {
+					// Fire an event before picking up the item
+					ItemUtils.interactivelyPickupItem(
+							ref,
+							fishStack,
+							null,
+							commandBuffer
+					);
+				} else {
+					Vector3d direction = TargetUtil.getLook(playerRef.getReference(), commandBuffer).getDirection().negate().add(0, 0.5, 0);
+					ItemUtils.throwItem(bobberRef, commandBuffer, fishStack, direction, 10.0F);
+				}
+				playerRef.sendMessage(Message.translation("gonefishing.caughtFish").color(Color.GREEN).param("fish", Message.translation(fishStack.getItem().getTranslationKey())));
+
 			}
-			playerRef.sendMessage(Message.translation("gonefishing.caughtFish").color(Color.GREEN).param("fish", Message.translation(fishStack.getItem().getTranslationKey())));
 		}
 		commandBuffer.removeEntity(bobberRef, RemoveReason.REMOVE);
 	}
