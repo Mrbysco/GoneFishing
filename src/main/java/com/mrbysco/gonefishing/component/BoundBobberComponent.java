@@ -11,7 +11,11 @@ import com.mrbysco.gonefishing.GoneFishingPlugin;
 import java.util.UUID;
 
 public class BoundBobberComponent implements Component<EntityStore> {
-	public static final BuilderCodec CODEC;
+	public static final BuilderCodec<BoundBobberComponent> CODEC = BuilderCodec.builder(BoundBobberComponent.class, BoundBobberComponent::new)
+			.append(new KeyedCodec<>("BoundEntity", Codec.UUID_BINARY),
+					(component, attachedEntity) -> component.attachedEntity = attachedEntity,
+					(component) -> component.attachedEntity).add()
+			.build();
 	private UUID attachedEntity;
 
 	public static ComponentType<EntityStore, BoundBobberComponent> getComponentType() {
@@ -35,13 +39,5 @@ public class BoundBobberComponent implements Component<EntityStore> {
 
 	public Component<EntityStore> clone() {
 		return new BoundBobberComponent(this.attachedEntity);
-	}
-
-	static {
-		CODEC = BuilderCodec.builder(BoundBobberComponent.class, BoundBobberComponent::new)
-				.append(new KeyedCodec<>("BoundEntity", Codec.UUID_BINARY),
-						(component, attachedEntity) -> component.attachedEntity = attachedEntity,
-						(component) -> component.attachedEntity).add()
-				.build();
 	}
 }
