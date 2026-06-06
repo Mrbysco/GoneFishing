@@ -1,7 +1,7 @@
 {
-    "Group": "GoneFishing",
-    "Name": "GoneFishing",
-    "Version": "0.4.0",
+    "Group": "com.mrbysco",
+    "Name": "ArmorStand",
+    "Version": "0.4.1",
     "Description": "A fishing mod for HyTale",
     "Authors": [
         {
@@ -12,7 +12,7 @@
         }
     ],
     "Website": "https://www.curseforge.com/hytale/mods/gone-fishing",
-    "ServerVersion": "2026.03.26-89796e57b",
+    "ServerVersion": ">=0.5.4 <0.6.0",
     "Dependencies": {
         "Hytale:EntityModule": "*"
     },
@@ -21,5 +21,8 @@
     },
     "DisabledByDefault": false,
     "Main": "com.mrbysco.gonefishing.GoneFishingPlugin",
-    "IncludesAssetPack": true
+    "IncludesAssetPack": true,
+    "UpdateChecker": {
+        "CurseForge": "1421820"
+    }
 }

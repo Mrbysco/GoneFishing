@@ -8,10 +8,8 @@ import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.math.util.ChunkUtil;
+import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.math.vector.Transform;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
-import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.BlockPosition;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
@@ -52,6 +50,8 @@ import com.mrbysco.gonefishing.component.BobberComponent;
 import com.mrbysco.gonefishing.component.BoundBobberComponent;
 import com.mrbysco.gonefishing.util.FishHelper;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
+import org.joml.Vector3d;
+import org.joml.Vector3i;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -218,15 +218,15 @@ public class FishingInteraction extends SimpleInstantInteraction {
 	                         @Nonnull ItemStack fishingStack, @Nonnull Vector3i targetBlock, Inventory inventory, byte hotbarSlot, Ref<EntityStore> playerRef) {
 		Ref<EntityStore> ref = context.getEntity();
 		Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
-		Vector3d vector3d = targetBlock.toVector3d();
+		Vector3d vector3d = new Vector3d(targetBlock);
 		vector3d.add(0.5, 0.25, 0.5);
 
-		Vector3f rotation = new Vector3f();
+		Rotation3f rotation = new Rotation3f();
 		HeadRotation headRotation = commandBuffer.getComponent(ref, HeadRotation.getComponentType());
 		if (headRotation != null) {
 			// Make the bpbber face upwards
 			//Invert the yaw by 180 degrees to make the armor stand face the player
-			rotation.setYaw(headRotation.getRotation().getYaw() + (float) (Math.PI / 180.0) * 180.0F);
+			rotation.setYaw(headRotation.getRotation().yaw() + (float) (Math.PI / 180.0) * 180.0F);
 		}
 
 		WorldChunk worldchunk = world.getChunkIfInMemory(ChunkUtil.indexChunkFromBlock(targetBlock.x, targetBlock.z));
