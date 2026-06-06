@@ -2,14 +2,15 @@ plugins {
     id 'idea'
     id 'java'
     id 'maven-publish'
-    id 'hytale-mod' version '0.+'
+    id 'com.azuredoom.hytale-tools' version '1.+'
+    id 'net.darkhax.curseforgegradle' version '1.3.32'
 }
 
-version = "${version}"
-group = "${maven_group}"
-base {
-    archivesName = "${mod_archive_name}"
+javadoc {
+    options.addStringOption('Xdoclint:-missing', '-quiet')
 }
+
+group = project.group
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(java_version)
@@ -17,37 +18,26 @@ java {
     withJavadocJar()
 }
 
-// Quiet warnings about missing Javadocs.
-javadoc {
-    options.addStringOption('Xdoclint:-missing', '-quiet')
+hytaleTools {
+    javaVersion = project.java_version as Integer
+    hytaleVersion = project.hytale_version.toString()
+    manifestServerVersion = project.manifestServerVersion.toString()
+    manifestGroup = project.manifest_group.toString()
+    modId = project.mod_id.toString()
+    modDescription = project.mod_description.toString()
+    modUrl = project.mod_url.toString()
+    mainClass = project.main_class.toString()
+    modCredits = project.mod_author.toString()
+    manifestDependencies = project.manifest_dependencies.toString()
+    manifestOptionalDependencies = project.manifest_opt_dependencies.toString()
+    curseforgeId = project.curseforgeID.toString()
+    disabledByDefault = project.disabled_by_default.toString().toBoolean()
+    includesPack = project.includes_pack.toString().toBoolean()
+    patchline = project.patchline.toString()
 }
 
 repositories {
     mavenCentral()
-    maven {
-        name = "Hytale Server Release"
-        url = uri("https://maven.hytale.com/release")
-    }
-    maven {
-        name = "Hytale Server Pre-Release"
-        url = uri("https://maven.hytale.com/pre-release")
-    }
-    maven {
-        name = "hMReleases"
-        url = uri("https://maven.hytale-mods.dev/releases")
-    }
-}
-
-dependencies {
-
-}
-
-hytale {
-    programArgs.add("--mods=${project.file("src/main").absolutePath}")
-    // uncomment if you want to add the Assets.zip file to your external libraries;
-    // !!! CAUTION, this file is very big and might make your IDE unresponsive for some time !!!
-    //
-    // addAssetsDependency = true
 }
 
 publishing {
@@ -69,5 +59,25 @@ publishing {
                 }
             }
         }
+    }
+}
+
+if (System.getenv().CURSEFORGE_KEY) {
+    task curseforge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+        apiToken = System.getenv().CURSEFORGE_KEY
+
+        def mainFile = upload(project.curseforgeID, jar)
+        mainFile.releaseType = 'release'
+        mainFile.addGameVersion("0.5")
+
+        mainFile.changelog = file("$project.rootDir/changelog.md")
+        mainFile.changelogType = 'markdown'
+    }
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
     }
 }
