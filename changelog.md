@@ -1,2 +1,1 @@
-* Initial build published using CurseForgeGradle
-* Built against 0.5.4
+* Fix accidental modid change from copying build setup from ArmorStand
