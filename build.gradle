@@ -3,7 +3,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'com.azuredoom.hytale-tools' version '1.+'
-    id 'net.darkhax.curseforgegradle' version '1.3.32'
+    id 'net.darkhax.curseforgegradle' version '1.3.33'
 }
 
 javadoc {
@@ -68,7 +68,7 @@ if (System.getenv().CURSEFORGE_KEY) {
 
         def mainFile = upload(project.curseforgeID, jar)
         mainFile.releaseType = 'release'
-        mainFile.addGameVersion("0.5")
+        mainFile.addGameVersion("0.7")
 
         mainFile.changelog = file("$project.rootDir/changelog.md")
         mainFile.changelogType = 'markdown'

@@ -7,7 +7,6 @@ import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.math.vector.Transform;
 import com.hypixel.hytale.protocol.BlockPosition;
@@ -39,7 +38,8 @@ import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
+import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import com.mrbysco.gonefishing.GoneFishingPlugin;
@@ -218,8 +218,8 @@ public class FishingInteraction extends SimpleInstantInteraction {
 	                         @Nonnull ItemStack fishingStack, @Nonnull Vector3i targetBlock, Inventory inventory, byte hotbarSlot, Ref<EntityStore> playerRef) {
 		Ref<EntityStore> ref = context.getEntity();
 		Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
-		Vector3d vector3d = new Vector3d(targetBlock);
-		vector3d.add(0.5, 0.25, 0.5);
+		Vector3d targetPosition = new Vector3d(targetBlock);
+		targetPosition.add(0.5, 0.25, 0.5);
 
 		Rotation3f rotation = new Rotation3f();
 		HeadRotation headRotation = commandBuffer.getComponent(ref, HeadRotation.getComponentType());
@@ -229,41 +229,50 @@ public class FishingInteraction extends SimpleInstantInteraction {
 			rotation.setYaw(headRotation.getRotation().yaw() + (float) (Math.PI / 180.0) * 180.0F);
 		}
 
-		WorldChunk worldchunk = world.getChunkIfInMemory(ChunkUtil.indexChunkFromBlock(targetBlock.x, targetBlock.z));
-		if (worldchunk != null) {
-			BlockType blockType = worldchunk.getBlockType(targetBlock);
-			@SuppressWarnings("removal") int i = worldchunk.getRotationIndex(targetBlock.x, targetBlock.y, targetBlock.z);
-			BlockBoundingBoxes.RotatedVariantBoxes variantBoxes = BlockBoundingBoxes.getAssetMap()
-					.getAsset(blockType.getHitboxTypeIndex())
-					.get(i);
-			vector3d.add(0.0, variantBoxes.getBoundingBox().max.y - 0.5, 0.0);
+		ChunkStore chunkStore = world.getChunkStore();
+		int x = targetBlock.x();
+		int y = targetBlock.y();
+		int z = targetBlock.z();
+		Ref<ChunkStore> sectionRef = chunkStore.getChunkSectionReferenceAtBlock(x, y, z);
+		if (sectionRef != null && sectionRef.isValid()) {
+			BlockSection blockSection = chunkStore.getStore().getComponent(sectionRef, BlockSection.getComponentType());
+			if (blockSection != null) {
+				BlockType blockType = BlockType.getAssetMap().getAsset(blockSection.get(x, y, z));
+				int blockRotation = blockSection.getRotationIndex(x, y, z);
+
+				BlockBoundingBoxes.RotatedVariantBoxes bounding = BlockBoundingBoxes.getAssetMap()
+						.getAsset(blockType.getHitboxTypeIndex())
+						.get(blockRotation);
+				targetPosition.add(0.0, bounding.getBoundingBox().max.y - 0.5, 0.0);
+
+				holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(targetPosition, rotation));
+				holder.addComponent(HeadRotation.getComponentType(), new HeadRotation(rotation));
+				holder.ensureComponent(PhysicsValues.getComponentType());
+
+				UUID uuid = UUID.randomUUID();
+				holder.addComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
+				holder.putComponent(NetworkId.getComponentType(), new NetworkId(ref.getStore().getExternalData().takeNextNetworkId()));
+
+				ModelAsset modelasset = ModelAsset.getAssetMap().getAsset("GoneFishingBobber");
+				if (modelasset == null)
+					modelasset = ModelAsset.DEBUG;
+				Model model = Model.createRandomScaleModel(modelasset);
+				holder.addComponent(PersistentModel.getComponentType(), new PersistentModel(model.toReference()));
+				holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(model));
+				if (model.getBoundingBox() == null)
+					return;
+
+				holder.addComponent(BoundingBox.getComponentType(), new BoundingBox(model.getBoundingBox()));
+				holder.addComponent(Velocity.getComponentType(), new Velocity());
+				holder.ensureAndGetComponent(BobberComponent.getComponentType());
+				commandBuffer.addEntity(holder, AddReason.SPAWN);
+
+				// Update the fishing rod's metadata to bind it to the spawned bobber
+				adjustMetadata(inventory, hotbarSlot, fishingStack, uuid);
+				// Update the player's bound bobber component
+				setBoundBobber(commandBuffer, playerRef, uuid);
+			}
 		}
-		holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(vector3d, rotation));
-		holder.addComponent(HeadRotation.getComponentType(), new HeadRotation(rotation));
-		holder.ensureComponent(PhysicsValues.getComponentType());
-
-		UUID uuid = UUID.randomUUID();
-		holder.addComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
-		holder.putComponent(NetworkId.getComponentType(), new NetworkId(ref.getStore().getExternalData().takeNextNetworkId()));
-
-		ModelAsset modelasset = ModelAsset.getAssetMap().getAsset("GoneFishingBobber");
-		if (modelasset == null)
-			modelasset = ModelAsset.DEBUG;
-		Model model = Model.createRandomScaleModel(modelasset);
-		holder.addComponent(PersistentModel.getComponentType(), new PersistentModel(model.toReference()));
-		holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(model));
-		if (model.getBoundingBox() == null)
-			return;
-
-		holder.addComponent(BoundingBox.getComponentType(), new BoundingBox(model.getBoundingBox()));
-		holder.addComponent(Velocity.getComponentType(), new Velocity());
-		holder.ensureAndGetComponent(BobberComponent.getComponentType());
-		commandBuffer.addEntity(holder, AddReason.SPAWN);
-
-		// Update the fishing rod's metadata to bind it to the spawned bobber
-		adjustMetadata(inventory, hotbarSlot, fishingStack, uuid);
-		// Update the player's bound bobber component
-		setBoundBobber(commandBuffer, playerRef, uuid);
 	}
 
 	/**
